@@ -22,7 +22,7 @@ function getRecaptchaToken(siteKey: string): Promise<string> {
     }
     const timeout = setTimeout(
       () => reject(new Error("reCAPTCHA timed out")),
-      RECAPTCHA_TIMEOUT_MS,
+      RECAPTCHA_TIMEOUT_MS
     );
     recaptcha.ready(async () => {
       try {
@@ -69,8 +69,7 @@ export function initContactForm() {
 
   const liveFields = new Set<Field>();
 
-  const fieldElement = (field: Field) =>
-    form.elements.namedItem(field) as FieldElement;
+  const fieldElement = (field: Field) => form.elements.namedItem(field) as FieldElement;
 
   function setError(field: Field, error: string | null) {
     const errorElement = document.getElementById(`contact-${field}-error`);
@@ -94,12 +93,9 @@ export function initContactForm() {
     element.addEventListener("blur", () => {
       if (element.value.trim()) validate(field);
     });
-    element.addEventListener(
-      field === "privacyConsent" ? "change" : "input",
-      () => {
-        if (liveFields.has(field)) validate(field);
-      },
-    );
+    element.addEventListener(field === "privacyConsent" ? "change" : "input", () => {
+      if (liveFields.has(field)) validate(field);
+    });
   }
 
   form.addEventListener("reset", () => {
@@ -107,9 +103,7 @@ export function initContactForm() {
     liveFields.clear();
   });
 
-  const submitButton = form.querySelector<HTMLButtonElement>(
-    'button[type="submit"]',
-  );
+  const submitButton = form.querySelector<HTMLButtonElement>('button[type="submit"]');
   const submitLabel = submitButton?.querySelector("p");
   const idleLabel = submitLabel?.textContent ?? "";
   let submitting = false;
@@ -156,7 +150,7 @@ export function initContactForm() {
 
     if (!publicRecaptchaKey) {
       console.error(
-        "[ContactForm] PUBLIC_RECAPTCHA_SITE_KEY is not set - cannot request a reCAPTCHA token.",
+        "[ContactForm] PUBLIC_RECAPTCHA_SITE_KEY is not set - cannot request a reCAPTCHA token."
       );
       setFormError(CONTACT_ERRORS.serverError);
       return;
@@ -167,10 +161,7 @@ export function initContactForm() {
       const formData = new FormData(form);
 
       try {
-        formData.append(
-          "recaptchaToken",
-          await getRecaptchaToken(publicRecaptchaKey),
-        );
+        formData.append("recaptchaToken", await getRecaptchaToken(publicRecaptchaKey));
       } catch (error) {
         console.error("[ContactForm] Could not get a reCAPTCHA token:", error);
         setFormError(CONTACT_ERRORS.submitFailed);
@@ -181,8 +172,7 @@ export function initContactForm() {
       // Only sent in dev: which env var is empty, the raw assessment, etc.
       const details = data?.devWarnings ?? [];
       if (isInputError(error)) {
-        for (const field of FIELDS)
-          setError(field, error.fields[field]?.[0] ?? null);
+        for (const field of FIELDS) setError(field, error.fields[field]?.[0] ?? null);
         if (!FIELDS.some((field) => error.fields[field])) {
           console.error("[ContactForm] Rejected input:", error.fields);
           setFormError(CONTACT_ERRORS.submitFailed);
@@ -190,14 +180,11 @@ export function initContactForm() {
         return;
       }
       if (data && isRecaptchaError(data.error)) {
-        console.error(
-          `[ContactForm] ${data.error} - message not sent.`,
-          ...details,
-        );
+        console.error(`[ContactForm] ${data.error} - message not sent.`, ...details);
         setFormError(
           data.error === RECAPTCHA_ERRORS.notValidated
             ? CONTACT_ERRORS.submitFailed
-            : CONTACT_ERRORS.serverError,
+            : CONTACT_ERRORS.serverError
         );
         return;
       }
@@ -205,7 +192,7 @@ export function initContactForm() {
         console.error(
           "[ContactForm] Server failed to send the message:",
           error ?? data.error,
-          ...details,
+          ...details
         );
         setFormError(CONTACT_ERRORS.serverError);
         return;
